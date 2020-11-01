@@ -24,13 +24,17 @@ function start() {
         type: "list",
         message: "What would you like to do?",
         choices: [
-            "View all employees"
+            "View all employees",
+            "View all employees by department"
         ]
 
     })
     .then(function(response){
         if (response.choice === "View all employees") {
             viewAll();
+        }
+        if (response.choice === "View all employees by department") {
+            viewByDept();
         }
     });
 }
@@ -42,8 +46,30 @@ function viewAll() {
         if (err) throw err;
         console.table(res);
         start();
-        // Use console.table to display results
-        // start inquirer again from the top
+    });
+}
+
+function viewByDept() {
+    inquirer
+    .prompt({
+        name: "byDepartment",
+        type: "list",
+        message: "Which department would you like to view?",
+        choices: [
+            "Sales",
+            "Marketing",
+            "Engineering",
+            "Legal"
+        ]
+
+    })
+    .then(function(response){
+        connection.query(
+            "SELECT employee.id, CONCAT(first_name,' ',last_name) AS employee, title from employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id WHERE department.name = ?", [response.byDepartment], function(err, res) {
+            if (err) throw err;
+            console.table(res);
+            start();
+        });
     });
 }
 
