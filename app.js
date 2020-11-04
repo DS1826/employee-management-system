@@ -12,73 +12,77 @@ const connection = mysql.createConnection({
 });
 
 // Connection ID
-connection.connect(function(err) {
+connection.connect(function (err) {
     if (err) throw err;
-    console.log("Connected as id " + connection.threadID + "\n");
+    console.log("Connected as id " + connection.threadID);
     start();
 });
 
 // Starts user database query
 function start() {
     inquirer
-    .prompt({
-        name: "choice",
-        type: "list",
-        message: "What would you like to do?",
-        choices: [
-            "View all employees",
-            "View all employees by department",
-            "Add department"
-        ]
+        .prompt({
+            name: "choice",
+            type: "list",
+            message: "What would you like to do?",
+            choices: [
+                "View All Employees",
+                "View All Employees By Department",
+                "Add Department",
+                "Add Role"
+            ]
 
-    })
-    .then(function(response){
-        if (response.choice === "View all employees") {
-            viewAll();
-        }
-        if (response.choice === "View all employees by department") {
-            viewByDept();
-        }
-        if (response.choice === "Add department") {
-            addDepartment();
-        }
-    });
+        })
+        .then(function (response) {
+            if (response.choice === "View All Employees") {
+                viewAll();
+            }
+            if (response.choice === "View All Employees By Department") {
+                viewByDept();
+            }
+            if (response.choice === "Add Department") {
+                addDepartment();
+            }
+            if (response.choice === "Add Role") {
+                addRole();
+            }
+        });
 }
 
 // View All Employees
 function viewAll() {
     connection.query(
         "SELECT employee.id, first_name, last_name, title, department.name AS department, salary FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id"
-        , function(err, res) {
-        if (err) throw err;
-        console.table(res);
-        start();
-    });
+        , function (err, res) {
+            if (err) throw err;
+            console.table(res);
+            start();
+        });
 }
 
 // View All Employees by Department
 function viewByDept() {
     inquirer
-    .prompt({
-        name: "byDepartment",
-        type: "list",
-        message: "Which department would you like to view?",
-        choices: [
-            "Sales",
-            "Marketing",
-            "Engineering",
-            "Legal"
-        ]
+        .prompt({
+            name: "byDepartment",
+            type: "list",
+            message: "Which department would you like to view?",
+            choices: [
+                "Sales",
+                "Marketing",
+                "Engineering",
+                "Legal"
+            ]
 
-    })
-    .then(function(response){
-        connection.query(
-            "SELECT employee.id, CONCAT(first_name,' ',last_name) AS employee, title from employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id WHERE department.name = ?", [response.byDepartment], function(err, res) {
-            if (err) throw err;
-            console.table(res);
-            start();
+        })
+        .then(function (response) {
+            connection.query(
+                "SELECT employee.id, CONCAT(first_name,' ',last_name) AS employee, title from employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id WHERE department.name = ?", [response.byDepartment], function (err, res) {
+                    if (err) throw err;
+                    console.table(res);
+                    start();
+                });
         });
-    });
 }
 
 // Add Employee - Need to work on Role ID & Manager ID
@@ -134,19 +138,67 @@ function viewByDept() {
 // Add Department
 function addDepartment() {
     inquirer
-    .prompt({
-        name: "newDept",
-        type: "input",
-        message: "Which department would you like to add?"
-    })
-    .then(function(response) {
-        connection.query(
-            "INSERT INTO department (name) VALUES (?)", [response.newDept], function(err, res) {
-            if (err) throw err;
-            console.log("The following department has been created: " + [response.newDept]);
-            start();
+        .prompt({
+            name: "newDept",
+            type: "input",
+            message: "Which department would you like to add?"
+        })
+        .then(function (response) {
+            connection.query(
+                "INSERT INTO department (name) VALUES (?)", [response.newDept], function (err, res) {
+                    if (err) throw err;
+                    console.log("The following department has been created: " + [response.newDept]);
+                    start();
+                });
         });
-    });
 }
 
+// Creates Department Array from database
+let deptList = [];
+
+function getDepts() {
+    connection.query("SELECT * FROM department", function (err, res) {
+        if (err) throw err
+        for (let i = 0; i < res.length; i++) {
+            deptList.push(res[i].name);
+        }
+    });
+    
+    return deptList;
+}
+
+// Add Role
+function addRole() {
+    
+        inquirer
+            .prompt([
+                {
+                    name: "newRole",
+                    type: "input",
+                    message: "What role would you like to add?"
+                },
+                {
+                    name: "newSalary",
+                    type: "number",
+                    message: "What is the salary for this new role?"
+                },
+                {
+                    name: "dept",
+                    type: "list",
+                    message: "Pick a department for this new role:",
+                    choices: getDepts()
+                }
+            ])
+            .then(function (response) {
+
+                let query = "INSERT INTO role (title, salary, department_id) VALUES (?, ?, (SELECT id FROM department WHERE name = ?))";
+
+                connection.query(
+                    query, [response.newRole, response.newSalary, response.dept], function (err, res) {
+                        if (err) throw err;
+                        console.log("The new role has been created");
+                        start();
+                    });
+            });
+}
 
