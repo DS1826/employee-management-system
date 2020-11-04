@@ -27,7 +27,7 @@ function start() {
             message: "What would you like to do?",
             choices: [
                 "View All Employees",
-                "View All Employees By Department",
+                "View All Departments",
                 "Add Department",
                 "Add Role"
             ]
@@ -35,10 +35,10 @@ function start() {
         })
         .then(function (response) {
             if (response.choice === "View All Employees") {
-                viewAll();
+                viewEmployees();
             }
-            if (response.choice === "View All Employees By Department") {
-                viewByDept();
+            if (response.choice === "View All Departments") {
+                viewDepts();
             }
             if (response.choice === "Add Department") {
                 addDepartment();
@@ -49,8 +49,22 @@ function start() {
         });
 }
 
+// Creates Department Array from database
+let deptList = [];
+
+function getDepts() {
+    connection.query("SELECT * FROM department", function (err, res) {
+        if (err) throw err
+        for (let i = 0; i < res.length; i++) {
+            deptList.push(res[i].name);
+        }
+    });
+
+    return deptList;
+}
+
 // View All Employees
-function viewAll() {
+function viewEmployees() {
     connection.query(
         "SELECT employee.id, first_name, last_name, title, department.name AS department, salary FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id"
         , function (err, res) {
@@ -61,27 +75,12 @@ function viewAll() {
 }
 
 // View All Employees by Department
-function viewByDept() {
-    inquirer
-        .prompt({
-            name: "byDepartment",
-            type: "list",
-            message: "Which department would you like to view?",
-            choices: [
-                "Sales",
-                "Marketing",
-                "Engineering",
-                "Legal"
-            ]
-
-        })
-        .then(function (response) {
-            connection.query(
-                "SELECT employee.id, CONCAT(first_name,' ',last_name) AS employee, title from employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id WHERE department.name = ?", [response.byDepartment], function (err, res) {
-                    if (err) throw err;
-                    console.table(res);
-                    start();
-                });
+function viewDepts() {
+    connection.query(
+        "SELECT * FROM department", function (err, res) {
+            if (err) throw err;
+            console.table(res);
+            start();
         });
 }
 
@@ -153,52 +152,38 @@ function addDepartment() {
         });
 }
 
-// Creates Department Array from database
-let deptList = [];
-
-function getDepts() {
-    connection.query("SELECT * FROM department", function (err, res) {
-        if (err) throw err
-        for (let i = 0; i < res.length; i++) {
-            deptList.push(res[i].name);
-        }
-    });
-    
-    return deptList;
-}
-
 // Add Role
 function addRole() {
-    
-        inquirer
-            .prompt([
-                {
-                    name: "newRole",
-                    type: "input",
-                    message: "What role would you like to add?"
-                },
-                {
-                    name: "newSalary",
-                    type: "number",
-                    message: "What is the salary for this new role?"
-                },
-                {
-                    name: "dept",
-                    type: "list",
-                    message: "Pick a department for this new role:",
-                    choices: getDepts()
-                }
-            ])
-            .then(function (response) {
 
-                let query = "INSERT INTO role (title, salary, department_id) VALUES (?, ?, (SELECT id FROM department WHERE name = ?))";
+    inquirer
+        .prompt([
+            {
+                name: "newRole",
+                type: "input",
+                message: "What role would you like to add?"
+            },
+            {
+                name: "newSalary",
+                type: "number",
+                message: "What is the salary for this new role?"
+            },
+            {
+                name: "dept",
+                type: "list",
+                message: "Pick a department for this new role:",
+                choices: getDepts()
+            }
+        ])
+        .then(function (response) {
 
-                connection.query(
-                    query, [response.newRole, response.newSalary, response.dept], function (err, res) {
-                        if (err) throw err;
-                        console.log("The new role has been created");
-                        start();
-                    });
-            });
+            let query = "INSERT INTO role (title, salary, department_id) VALUES (?, ?, (SELECT id FROM department WHERE name = ?))";
+
+            connection.query(
+                query, [response.newRole, response.newSalary, response.dept], function (err, res) {
+                    if (err) throw err;
+                    console.log("The new role has been created");
+                    start();
+                });
+        });
 }
 
