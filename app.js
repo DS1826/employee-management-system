@@ -230,6 +230,7 @@ function addRole() {
 
 }
 
+// Update Employee Records
 function updateEmployee() {
     connection.query("SELECT * FROM employee", function (err, res) {
         if (err) throw err;
