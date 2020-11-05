@@ -122,7 +122,7 @@ function getManagers() {
 // View All Employees
 function viewEmployees() {
     connection.query(
-        "SELECT employee.id, first_name, last_name, title, department.name AS department, salary FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id"
+        "SELECT first_name, last_name, title, department.name AS department, salary FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id"
         , function (err, res) {
             if (err) throw err;
             console.table(res);
@@ -133,7 +133,7 @@ function viewEmployees() {
 // View All Departments
 function viewDepts() {
     connection.query(
-        "SELECT id, name AS Department FROM department", function (err, res) {
+        "SELECT name AS Department FROM department", function (err, res) {
             if (err) throw err;
             console.table(res);
             start();
@@ -143,7 +143,7 @@ function viewDepts() {
 // View All Roles
 function viewRoles() {
     connection.query(
-        "SELECT role.id, title, salary, name AS department FROM role INNER JOIN department ON role.department_id = department.id", function (err, res) {
+        "SELECT title, salary, name AS department FROM role INNER JOIN department ON role.department_id = department.id", function (err, res) {
             if (err) throw err;
             console.table(res);
             start();
@@ -279,6 +279,46 @@ function updateEmployee() {
             });
     });
 }
+
+// function updateManager() {
+//     connection.query("SELECT CONCAT(first_name,' ', last_name) AS name FROM employee", function (err, res) {
+//         if (err) throw err;
+//         inquirer
+//             .prompt([
+//                 {
+//                     name: "employee",
+//                     type: "rawlist",
+//                     message: "Select employee by last name to update:",
+//                     choices: function () {
+//                         let empList = [];
+//                         for (let i = 0; i < res.length; i++) {
+//                             empList.push(res[i].name);
+//                         }
+//                         return empList;
+//                     }
+//                 },
+//                 {
+//                     name: "manager",
+//                     type: "list",
+//                     message: "Select employee to designate as the manager:",
+//                     choices: getManagers()
+//                 }
+//             ])
+//             .then(function (response) {
+//                 let str = response.employee;
+//                 let name = str.split();
+
+//                 let query = "UPDATE employee SET role_id = (SELECT id FROM role WHERE title = ?) WHERE last_name = ?";
+
+//                 connection.query(
+//                     query, [response.newTitle, response.employee], function (err, res) {
+//                         if (err) throw err;
+//                         console.log("The employee's role has been updated");
+//                         start();
+//                     });
+//             });
+//     });
+// 
 
 function deleteEmployee() {
     connection.query("SELECT * FROM employee", function (err, res) {
