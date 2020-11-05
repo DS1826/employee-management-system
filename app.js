@@ -280,46 +280,6 @@ function updateEmployee() {
     });
 }
 
-// function updateManager() {
-//     connection.query("SELECT CONCAT(first_name,' ', last_name) AS name FROM employee", function (err, res) {
-//         if (err) throw err;
-//         inquirer
-//             .prompt([
-//                 {
-//                     name: "employee",
-//                     type: "rawlist",
-//                     message: "Select employee by last name to update:",
-//                     choices: function () {
-//                         let empList = [];
-//                         for (let i = 0; i < res.length; i++) {
-//                             empList.push(res[i].name);
-//                         }
-//                         return empList;
-//                     }
-//                 },
-//                 {
-//                     name: "manager",
-//                     type: "list",
-//                     message: "Select employee to designate as the manager:",
-//                     choices: getManagers()
-//                 }
-//             ])
-//             .then(function (response) {
-//                 let str = response.employee;
-//                 let name = str.split();
-
-//                 let query = "UPDATE employee SET role_id = (SELECT id FROM role WHERE title = ?) WHERE last_name = ?";
-
-//                 connection.query(
-//                     query, [response.newTitle, response.employee], function (err, res) {
-//                         if (err) throw err;
-//                         console.log("The employee's role has been updated");
-//                         start();
-//                     });
-//             });
-//     });
-// }
-
 function deleteEmployee() {
     connection.query("SELECT * FROM employee", function (err, res) {
         if (err) throw err;
