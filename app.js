@@ -33,6 +33,9 @@ function start() {
                 "Add Department",
                 "Add Role",
                 "Update Employee Role",
+                "Delete Employee",
+                "Delete Department",
+                "Delete Role",
                 "EXIT"
             ]
 
@@ -58,6 +61,15 @@ function start() {
             }
             if (response.choice === "Update Employee Role") {
                 updateEmployee();
+            }
+            if (response.choice === "Delete Employee") {
+                deleteEmployee();
+            }
+            if (response.choice === "Delete Department") {
+                deleteDept();
+            }
+            if (response.choice === "Delete Role") {
+                deleteRole();
             }
             if (response.choice === "EXIT") {
                 connection.end();
@@ -230,7 +242,7 @@ function addRole() {
 
 }
 
-// Update Employee Records
+// Update Employee Role
 function updateEmployee() {
     connection.query("SELECT * FROM employee", function (err, res) {
         if (err) throw err;
@@ -268,4 +280,135 @@ function updateEmployee() {
     });
 }
 
+// function updateManager() {
+//     connection.query("SELECT CONCAT(first_name,' ', last_name) AS name FROM employee", function (err, res) {
+//         if (err) throw err;
+//         inquirer
+//             .prompt([
+//                 {
+//                     name: "employee",
+//                     type: "rawlist",
+//                     message: "Select employee by last name to update:",
+//                     choices: function () {
+//                         let empList = [];
+//                         for (let i = 0; i < res.length; i++) {
+//                             empList.push(res[i].name);
+//                         }
+//                         return empList;
+//                     }
+//                 },
+//                 {
+//                     name: "manager",
+//                     type: "list",
+//                     message: "Select employee to designate as the manager:",
+//                     choices: getManagers()
+//                 }
+//             ])
+//             .then(function (response) {
+//                 let str = response.employee;
+//                 let name = str.split();
 
+//                 let query = "UPDATE employee SET role_id = (SELECT id FROM role WHERE title = ?) WHERE last_name = ?";
+
+//                 connection.query(
+//                     query, [response.newTitle, response.employee], function (err, res) {
+//                         if (err) throw err;
+//                         console.log("The employee's role has been updated");
+//                         start();
+//                     });
+//             });
+//     });
+// }
+
+function deleteEmployee() {
+    connection.query("SELECT * FROM employee", function (err, res) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "employee",
+                    type: "rawlist",
+                    message: "Select employee to delete:",
+                    choices: function () {
+                        let empList = [];
+                        for (let i = 0; i < res.length; i++) {
+                            empList.push(res[i].last_name);
+                        }
+                        return empList;
+                    }
+                }
+            ])
+            .then(function (response) {
+                let query = "DELETE FROM employee WHERE last_name = ?";
+
+                connection.query(
+                    query, [response.employee], function (err, res) {
+                        if (err) throw err;
+                        console.log("The employee has been deleted");
+                        start();
+                    });
+            });
+    });
+}
+
+function deleteDept() {
+    connection.query("SELECT * FROM department", function (err, res) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "department",
+                    type: "rawlist",
+                    message: "Select department to delete:",
+                    choices: function () {
+                        let deptList = [];
+                        for (let i = 0; i < res.length; i++) {
+                            deptList.push(res[i].name);
+                        }
+                        return deptList;
+                    }
+                }
+            ])
+            .then(function (response) {
+                let query = "DELETE FROM department WHERE name = ?";
+
+                connection.query(
+                    query, [response.department], function (err, res) {
+                        if (err) throw err;
+                        console.log("The department has been deleted");
+                        start();
+                    });
+            });
+    });
+}
+
+function deleteRole() {
+    connection.query("SELECT * FROM role", function (err, res) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "role",
+                    type: "rawlist",
+                    message: "Select role to delete:",
+                    choices: function () {
+                        let roleList = [];
+                        for (let i = 0; i < res.length; i++) {
+                            roleList.push(res[i].title);
+                        }
+                        return roleList;
+                    }
+                }
+            ])
+            .then(function (response) {
+                let query = "DELETE FROM role WHERE title = ?";
+
+                connection.query(
+                    query, [response.role], function (err, res) {
+                        if (err) throw err;
+                        console.log("The role has been deleted");
+                        start();
+                    });
+            });
+    });
+}
