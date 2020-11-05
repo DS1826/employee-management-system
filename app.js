@@ -29,6 +29,7 @@ function start() {
                 "View All Employees",
                 "View All Departments",
                 "View All Roles",
+                "Add Employee",
                 "Add Department",
                 "Add Role"
             ]
@@ -43,6 +44,9 @@ function start() {
             }
             if (response.choice === "View All Roles") {
                 viewRoles();
+            }
+            if (response.choice === "Add Employee") {
+                addEmployee();
             }
             if (response.choice === "Add Department") {
                 addDepartment();
@@ -67,6 +71,20 @@ function getDepts() {
     return deptList;
 }
 
+// // Creates Roles Array from database
+let rolesList = [];
+
+function getRoles() {
+    connection.query("SELECT * FROM role", function (err, res) {
+        if (err) throw err
+        for (let i = 0; i < res.length; i++) {
+            rolesList.push(res[i].title);
+        }
+    });
+
+    return rolesList;
+}
+
 // View All Employees
 function viewEmployees() {
     connection.query(
@@ -81,7 +99,7 @@ function viewEmployees() {
 // View All Departments
 function viewDepts() {
     connection.query(
-        "SELECT * FROM department", function (err, res) {
+        "SELECT id, name AS Department FROM department", function (err, res) {
             if (err) throw err;
             console.table(res);
             start();
@@ -99,54 +117,49 @@ function viewRoles() {
 }
 
 // Add Employee - Need to work on Role ID & Manager ID
-// function addEmployee() {
+function addEmployee() {
 
-//     inquirer
-//     .prompt([
-//         {
-//         name: "firstName",
-//         type: "input",
-//         message: "What is the employee's first name?"
-//         },
-//         {
-//             name: "firstName",
-//             type: "input",
-//             message: "What is the employee's first name?"
-//         },
-//         {
-//             name: "role",
-//             type: "list",
-//             message: "What is the employee's role?",
-//             choices: [
-//                 "Consultant",
-//                 "Marketing Associate",
-//                 "Junior Developer",
-//                 "Legal Assistant"
-//             ]
-//         },
-//         {
-//             name: "manager",
-//             type: "list",
-//             message: "Who is the employee's manager?",
-//             choices: [
-//                 "None",
-//                 "Jane MacIntyre",
-//                 "Joe Green",
-//                 "John Stanford",
-//                 "Jennifer Long"
-//             ]
-//         },
+    inquirer
+    .prompt([
+        {
+        name: "firstName",
+        type: "input",
+        message: "What is the employee's first name?"
+        },
+        {
+            name: "lastName",
+            type: "input",
+            message: "What is the employee's last name?"
+        },
+        {
+            name: "role",
+            type: "list",
+            message: "What is the employee's role?",
+            choices: getRoles()
+        },
+        {
+            name: "manager",
+            type: "list",
+            message: "Who is the employee's manager?",
+            choices: [
+                "None",
+                "Jane MacIntyre",
+                "Joe Green",
+                "John Stanford",
+                "Jennifer Long"
+            ]
+        },
 
-//     ])
-//     .then(function(response){
-//         connection.query(
-//             "SELECT employee.id, CONCAT(first_name,' ',last_name) AS employee, title from employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id WHERE department.name = ?", [response.byDepartment], function(err, res) {
-//             if (err) throw err;
-//             console.table(res);
-//             start();
-//         });
-//     });
-// }
+    ])
+    .then(function(response){
+        connection.query(
+            "SELECT employee.id, CONCAT(first_name,' ',last_name) AS employee, title from employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id WHERE department.name = ?", [response.byDepartment], function(err, res) {
+            if (err) throw err;
+            console.table(res);
+            start();
+        });
+    });
+}
 
 // Add Department
 function addDepartment() {
