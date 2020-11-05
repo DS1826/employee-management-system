@@ -9,6 +9,9 @@ This Employee Tracker is a Content Management System that enables a company to v
 ## ADD RECORDS DEMO
 ![Nov-04-2020 22-12-30](https://user-images.githubusercontent.com/67653440/98193363-02ea7600-1eeb-11eb-98b5-e92d094ccf91.gif)
 
+## EMPLOYEE RECORD UPDATE DEMO
+![Nov-04-2020 22-17-12](https://user-images.githubusercontent.com/67653440/98193577-90c66100-1eeb-11eb-8e80-01052796f792.gif)
+
 ## Technologies
 This application was created with: 
 
