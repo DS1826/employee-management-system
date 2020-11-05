@@ -32,7 +32,8 @@ function start() {
                 "Add Employee",
                 "Add Department",
                 "Add Role",
-                "Update Employee Record"
+                "Update Employee Record",
+                "EXIT"
             ]
 
         })
@@ -57,6 +58,9 @@ function start() {
             }
             if (response.choice === "Update Employee Record") {
                 updateEmployee();
+            }
+            if (response.choice === "EXIT") {
+                connection.end();
             }
         });
 }
@@ -226,36 +230,41 @@ function addRole() {
 
 }
 
-updateEmployee() {
-    inquirer
-        .prompt([
-            {
-                name: "employee",
-                type: "list",
-                message: "Which employee do you want to update?"
-            },
-            {
-                name: "newSalary",
-                type: "number",
-                message: "What is the salary for this new role?"
-            },
-            {
-                name: "dept",
-                type: "list",
-                message: "Pick a department for this new role:",
-                choices: getDepts()
-            }
-        ])
-        .then(function (response) {
+function updateEmployee() {
+    connection.query("SELECT * FROM employee", function (err, res) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "employee",
+                    type: "rawlist",
+                    message: "Select employee to update:",
+                    choices: function () {
+                        let empList = [];
+                        for (let i = 0; i < res.length; i++) {
+                            empList.push(res[i].last_name);
+                        }
+                        return empList;
+                    }
+                },
+                {
+                    name: "newTitle",
+                    type: "list",
+                    message: "Select employee's new role:",
+                    choices: getRoles()
+                }
+            ])
+            .then(function (response) {
+                let query = "UPDATE employee SET role_id = (SELECT id FROM role WHERE title = ?) WHERE last_name = ?";
 
-            let query = "INSERT INTO role (title, salary, department_id) VALUES (?, ?, (SELECT id FROM department WHERE name = ?))";
-
-            connection.query(
-                query, [response.newRole, response.newSalary, response.dept], function (err, res) {
-                    if (err) throw err;
-                    console.log("The new role has been created");
-                    start();
-                });
-        });
+                connection.query(
+                    query, [response.newTitle, response.employee], function (err, res) {
+                        if (err) throw err;
+                        console.log("The employee record has been updated");
+                        start();
+                    });
+            });
+    });
 }
+
 
