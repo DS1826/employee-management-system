@@ -31,7 +31,8 @@ function start() {
                 "View All Roles",
                 "Add Employee",
                 "Add Department",
-                "Add Role"
+                "Add Role",
+                "Update Employee Record"
             ]
 
         })
@@ -53,6 +54,9 @@ function start() {
             }
             if (response.choice === "Add Role") {
                 addRole();
+            }
+            if (response.choice === "Update Employee Record") {
+                updateEmployee();
             }
         });
 }
@@ -83,6 +87,20 @@ function getRoles() {
     });
 
     return rolesList;
+}
+
+// // Creates Managers Array from database
+let managerList = [];
+
+function getManagers() {
+    connection.query("SELECT CONCAT(first_name,' ',last_name) AS MANAGER FROM employee WHERE manager_id IS NULL", function (err, res) {
+        if (err) throw err
+        for (let i = 0; i < res.length; i++) {
+            managerList.push(res[i].manager);
+        }
+    });
+
+    return managerList;
 }
 
 // View All Employees
@@ -120,45 +138,36 @@ function viewRoles() {
 function addEmployee() {
 
     inquirer
-    .prompt([
-        {
-        name: "firstName",
-        type: "input",
-        message: "What is the employee's first name?"
-        },
-        {
-            name: "lastName",
-            type: "input",
-            message: "What is the employee's last name?"
-        },
-        {
-            name: "role",
-            type: "list",
-            message: "What is the employee's role?",
-            choices: getRoles()
-        },
-        {
-            name: "manager",
-            type: "list",
-            message: "Who is the employee's manager?",
-            choices: [
-                "None",
-                "Jane MacIntyre",
-                "Joe Green",
-                "John Stanford",
-                "Jennifer Long"
-            ]
-        },
+        .prompt([
+            {
+                name: "firstName",
+                type: "input",
+                message: "What is the employee's first name?"
+            },
+            {
+                name: "lastName",
+                type: "input",
+                message: "What is the employee's last name?"
+            },
+            {
+                name: "role",
+                type: "list",
+                message: "What is the employee's role?",
+                choices: getRoles()
+            }
 
-    ])
-    .then(function(response){
-        connection.query(
-            "SELECT employee.id, CONCAT(first_name,' ',last_name) AS employee, title from employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id WHERE department.name = ?", [response.byDepartment], function(err, res) {
-            if (err) throw err;
-            console.table(res);
-            start();
+        ])
+        .then(function (response) {
+            let query = "INSERT INTO employee (first_name, last_name, role_id) VALUES (?, ?, (SELECT id FROM role WHERE title = ?))";
+
+            connection.query(
+                query, [response.firstName, response.lastName, response.role], function (err, res) {
+                    if (err) throw err;
+                    console.log("The new employee has been added");
+                    start();
+                });
+
         });
-    });
 }
 
 // Add Department
@@ -177,6 +186,8 @@ function addDepartment() {
                     start();
                 });
         });
+
+
 }
 
 // Add Role
@@ -188,6 +199,40 @@ function addRole() {
                 name: "newRole",
                 type: "input",
                 message: "What role would you like to add?"
+            },
+            {
+                name: "newSalary",
+                type: "number",
+                message: "What is the salary for this new role?"
+            },
+            {
+                name: "dept",
+                type: "list",
+                message: "Pick a department for this new role:",
+                choices: getDepts()
+            }
+        ])
+        .then(function (response) {
+
+            let query = "INSERT INTO role (title, salary, department_id) VALUES (?, ?, (SELECT id FROM department WHERE name = ?))";
+
+            connection.query(
+                query, [response.newRole, response.newSalary, response.dept], function (err, res) {
+                    if (err) throw err;
+                    console.log("The new role has been created");
+                    start();
+                });
+        });
+
+}
+
+updateEmployee() {
+    inquirer
+        .prompt([
+            {
+                name: "employee",
+                type: "list",
+                message: "Which employee do you want to update?"
             },
             {
                 name: "newSalary",
