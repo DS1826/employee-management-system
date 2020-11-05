@@ -32,7 +32,7 @@ function start() {
                 "Add Employee",
                 "Add Department",
                 "Add Role",
-                "Update Employee Record",
+                "Update Employee Role",
                 "EXIT"
             ]
 
@@ -56,7 +56,7 @@ function start() {
             if (response.choice === "Add Role") {
                 addRole();
             }
-            if (response.choice === "Update Employee Record") {
+            if (response.choice === "Update Employee Role") {
                 updateEmployee();
             }
             if (response.choice === "EXIT") {
@@ -261,7 +261,7 @@ function updateEmployee() {
                 connection.query(
                     query, [response.newTitle, response.employee], function (err, res) {
                         if (err) throw err;
-                        console.log("The employee record has been updated");
+                        console.log("The employee's role has been updated");
                         start();
                     });
             });
