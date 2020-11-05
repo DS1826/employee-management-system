@@ -1,4 +1,4 @@
-# Employee Tracker
+# Employee Management System
 
 ## General Information
 This Employee Tracker is a Content Management System that enables a company to view and update their employee records.
