@@ -28,6 +28,7 @@ function start() {
             choices: [
                 "View All Employees",
                 "View All Departments",
+                "View All Roles",
                 "Add Department",
                 "Add Role"
             ]
@@ -39,6 +40,9 @@ function start() {
             }
             if (response.choice === "View All Departments") {
                 viewDepts();
+            }
+            if (response.choice === "View All Roles") {
+                viewRoles();
             }
             if (response.choice === "Add Department") {
                 addDepartment();
@@ -74,10 +78,20 @@ function viewEmployees() {
         });
 }
 
-// View All Employees by Department
+// View All Departments
 function viewDepts() {
     connection.query(
         "SELECT * FROM department", function (err, res) {
+            if (err) throw err;
+            console.table(res);
+            start();
+        });
+}
+
+// View All Roles
+function viewRoles() {
+    connection.query(
+        "SELECT role.id, title, salary, name AS department FROM role INNER JOIN department ON role.department_id = department.id", function (err, res) {
             if (err) throw err;
             console.table(res);
             start();
