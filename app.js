@@ -192,7 +192,7 @@ function addEmployee() {
             },
             {
                 name: "role",
-                type: "list",
+                type: "rawlist",
                 message: "What is the employee's role?",
                 choices: getRoles()
             }
@@ -247,7 +247,7 @@ function addRole() {
             },
             {
                 name: "dept",
-                type: "list",
+                type: "rawlist",
                 message: "Pick a department for this new role:",
                 choices: getDepts()
             }
@@ -291,7 +291,7 @@ function updateEmployee() {
                 },
                 {
                     name: "newTitle",
-                    type: "list",
+                    type: "rawlist",
                     message: "Select employee's new role:",
                     choices: getRoles()
                 }
@@ -334,7 +334,7 @@ function updateManager() {
                 },
                 {
                     name: "manager",
-                    type: "list",
+                    type: "rawlist",
                     message: "Select the employee's manager:",
                     choices: getManagers()
                 }
