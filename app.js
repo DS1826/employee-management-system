@@ -33,6 +33,7 @@ function start() {
                 "Add Department",
                 "Add Role",
                 "Update Employee Role",
+                "Update Employee Manager",
                 "Delete Employee",
                 "Delete Department",
                 "Delete Role",
@@ -63,6 +64,9 @@ function start() {
                     break;
                 case "Update Employee Role":
                     updateEmployee();
+                    break;
+                case "Update Employee Manager":
+                    updateManager();
                     break;
                 case "Delete Employee":
                     deleteEmployee();
@@ -126,7 +130,7 @@ function getRoles() {
 let managerList = [];
 
 function getManagers() {
-    connection.query("SELECT CONCAT(first_name,' ',last_name) AS MANAGER FROM employee WHERE manager_id IS NULL", function (err, res) {
+    connection.query("SELECT * FROM employee WHERE manager_id IS NULL", function (err, res) {
         if (err) throw err
         for (let i = 0; i < res.length; i++) {
 
@@ -299,6 +303,50 @@ function updateEmployee() {
                     query, [response.newTitle, response.employee], function (err, res) {
                         if (err) throw err;
                         console.log("The employee's role has been updated");
+                        start();
+                    });
+            });
+    });
+}
+
+// Refer to Update Employee to create object in choices
+function updateManager() {
+    connection.query("SELECT * FROM employee", function (err, res) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "employee",
+                    type: "rawlist",
+                    message: "Select employee to update:",
+                    choices: function () {
+                        let empList = [];
+                        for (let i = 0; i < res.length; i++) {
+
+                            let empData = {
+                                name: res[i].first_name + " " + res[i].last_name,
+                                value: res[i].id
+                            }
+                            empList.push(empData);
+                        }
+                        return empList;
+                    }
+                },
+                {
+                    name: "manager",
+                    type: "list",
+                    message: "Select the employee's manager:",
+                    choices: getManagers()
+                }
+            ])
+            .then(function (response) {
+
+                let query = "UPDATE employee SET manager_id = ? WHERE id = ?";
+
+                connection.query(
+                    query, [response.manager, response.employee], function (err, res) {
+                        if (err) throw err;
+                        console.log("The employee's manager has been updated");
                         start();
                     });
             });
